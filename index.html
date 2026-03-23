@@ -2,143 +2,185 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>进阶版家族谱 - 带详情侧边栏</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家族传承电子族谱</title>
     <style>
-        /* 1. 正常状态：默认样式，保持清晰 */
-.member-card {
-    border: 1px solid var(--line-color);
-    background: #fff;
-    transition: all 0.3s ease;
-}
-
-/* 2. 殁 (Deceased)：黑白、肃穆、怀念 */
-.member-card.deceased {
-    filter: grayscale(100%);     /* 变成黑白照片感 */
-    background-color: #f0f0f0;   /* 灰色底 */
-    border: 1px dashed #999;     /* 虚线边框 */
-    opacity: 0.8;                /* 略微透明 */
-}
-.member-card.deceased .name::after {
-    content: " (殁)";            /* 自动在名字后加字，省去手动输入 */
-    font-size: 10px;
-    color: #777;
-}
-
-/* 3. 离 (Divorced)：半透明、边缘化、过去式 */
-.member-card.ex-spouse {
-    opacity: 0.4;                /* 大幅透明，不抢眼 */
-    border: 1px dotted #ccc;     /* 点状边框，表示联系微弱 */
-    transform: scale(0.95);      /* 稍微缩小一点 */
-    filter: sepia(30%);          /* 带一点点怀旧的黄褐色 */
-}
-.member-card.ex-spouse:hover {
-    opacity: 1;                  /* 鼠标放上去才恢复清晰，表示尊重历史 */
-}
-
-/* 离异专用连接符 */
-.spouse-link.divorced {
-    color: #ccc;
-    font-size: 14px;
-    margin: 0 10px;
-}
         :root {
-            --primary-color: #8c7851;
-            --bg-color: #fdfaf5;
-            --line-color: #d1c7b7;
-            --sidebar-bg: #fff;
+            --primary-color: #8c7851; /* 沉稳的中式棕色 */
+            --bg-color: #fdfaf5;      /* 宣纸底色 */
+            --line-color: #d1c7b7;    /* 连线颜色 */
+            --male-bg: #ffffff;
+            --female-bg: #fffcf0;
         }
 
-        body { background-color: var(--bg-color); font-family: "Microsoft YaHei", sans-serif; margin: 0; display: flex; overflow-x: auto; }
+        body { 
+            background-color: var(--bg-color); 
+            font-family: "Microsoft YaHei", "SimSun", sans-serif; 
+            margin: 0; 
+            display: flex; 
+            overflow-x: auto; /* 家族树太宽时可左右滚动 */
+        }
 
-        /* --- 家族树部分 --- */
-        .tree-container { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
-        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
-        .tree li { text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; }
+        /* --- 家族树核心布局 --- */
+        .tree-container { flex: 1; padding: 50px; display: flex; flex-direction: column; align-items: center; min-width: 1000px; }
         
-        /* 连线 CSS (同前，保持稳定) */
+        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
+        .tree li { text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; transition: all 0.5s; }
+
+        /* 连线逻辑 CSS */
         .tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid var(--line-color); width: 50%; height: 20px; }
         .tree li::after { right: auto; left: 50%; border-left: 2px solid var(--line-color); }
         .tree li:only-child::after, .tree li:only-child::before { display: none; }
         .tree li:only-child { padding-top: 0; }
         .tree li:first-child::after { border-radius: 5px 0 0 0; }
         .tree li:last-child::before { border-right: 2px solid var(--line-color); border-radius: 0 5px 0 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
         .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid var(--line-color); width: 0; height: 20px; }
 
-        /* 卡片交互样式 */
+        /* --- 成员卡片设计 --- */
+        .couple { display: flex; justify-content: center; align-items: center; gap: 10px; position: relative; }
+        
         .member-card {
-            border: 1px solid var(--line-color); padding: 10px 15px; border-radius: 5px;
-            background: #fff; cursor: pointer; transition: all 0.3s; min-width: 80px;
+            border: 1px solid var(--line-color);
+            padding: 10px 15px;
+            border-radius: 4px;
+            background: var(--male-bg);
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 90px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
         }
-        .member-card:hover { transform: scale(1.05); border-color: var(--primary-color); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .couple { display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .member-card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
-        /* --- 侧边栏 CSS --- */
+        .name { font-weight: bold; font-size: 16px; color: #333; }
+        .tag { font-size: 11px; color: #999; margin-top: 4px; }
+
+        /* --- 三种特殊状态样式 --- */
+        /* 1. 殁 (Deceased) */
+        .member-card.deceased { filter: grayscale(100%); opacity: 0.7; background: #eee; border-style: dashed; }
+        /* 2. 离 (Ex-spouse) */
+        .member-card.ex-spouse { opacity: 0.4; border-style: dotted; transform: scale(0.9); }
+        /* 3. 女性/配偶背景色微调 */
+        .member-card.female { background: var(--female-bg); }
+
+        /* 连接符 span */
+        .spouse-link { font-size: 14px; color: var(--line-color); font-weight: bold; }
+        .spouse-link.divorced { color: #ccc; font-weight: normal; }
+
+        /* --- 侧边详情栏 --- */
         #sidebar {
-            width: 300px; height: 100vh; background: var(--sidebar-bg);
-            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
-            position: fixed; right: -320px; top: 0; /* 初始隐藏在屏幕右侧 */
+            width: 320px; height: 100vh; background: #fff;
+            position: fixed; right: -350px; top: 0;
+            box-shadow: -10px 0 20px rgba(0,0,0,0.1);
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 30px; box-sizing: border-box; z-index: 1000;
-            border-left: 4px solid var(--primary-color);
+            padding: 40px 25px; box-sizing: border-box;
+            z-index: 1000; border-left: 5px solid var(--primary-color);
         }
-        #sidebar.active { right: 0; } /* 激活时滑出 */
-        .close-btn { cursor: pointer; float: right; font-size: 24px; color: #ccc; }
-        .sidebar-photo { width: 100px; height: 100px; background: #eee; border-radius: 50%; margin: 20px auto; display: block; }
+        #sidebar.active { right: 0; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #999; }
+        .sidebar-photo { width: 120px; height: 120px; border-radius: 50%; margin: 0 auto 20px; display: block; object-fit: cover; background: #f0f0f0; border: 3px solid var(--line-color); }
+        .info-item { margin-bottom: 15px; font-size: 14px; line-height: 1.6; }
+        .info-label { font-weight: bold; color: var(--primary-color); margin-right: 5px; }
+
+        /* 字辈展示区 */
+        .generation-poem { margin-top: 20px; padding: 15px; border: 1px double var(--line-color); background: #fff; text-align: center; max-width: 600px; }
     </style>
 </head>
 <body>
 
-    <div class="tree-container">
-        <h2 style="color:var(--primary-color)">张氏家族电子族谱</h2>
-        <div class="tree">
-            <ul>
-                <li>
-                    <div class="couple">
-                        <div class="member-card" onclick="openDetails('张老太爷', '1920-2000', '重庆渝北', '家族创始人，早年闯荡江湖，为人仗义。')">
-                            <div class="name">张老太爷</div><div class="tag">始祖</div>
-                        </div>
-                        <span style="color:pink">配偶</span>
-                        <div class="member-card" onclick="openDetails('王老太奶', '1923-2005', '四川成都', '勤俭持家，擅长蜀绣。')">
-                            <div class="name">王老太奶</div><div class="tag">姻亲</div>
-                        </div>
+<div class="tree-container">
+    <h1 style="color:var(--primary-color); letter-spacing: 4px;">张氏家族传承电子族谱</h1>
+    
+    <div class="generation-poem">
+        <p style="margin:0; font-size: 13px; color: #888;">【家族字辈】</p>
+        <p style="margin:5px 0 0 0; letter-spacing: 5px; font-weight: bold;">世 德 光 昌 永 · 仁 义 礼 智 长</p>
+    </div>
+
+    <div class="tree">
+        <ul>
+            <li>
+                <div class="couple">
+                    <div class="member-card" onclick="openDetails('张世荣', '1900-1980', '重庆', '张氏家族入川始祖，为人厚道。', 'images/shirong.jpg')">
+                        <div class="name">张世荣</div><div class="tag">始祖 (世字辈)</div>
                     </div>
-                    <ul>
-                        <li>
-                            <div class="member-card" onclick="openDetails('张大伯', '1945-至今', '重庆', '退休教师，爱好书法。')">
-                                <div class="name">张大伯</div><div class="tag">长子</div>
+                    <span class="spouse-link">配</span>
+                    <div class="member-card female deceased" onclick="openDetails('王氏', '1905-1975', '成都', '勤俭持家。', 'images/wangshi.jpg')">
+                        <div class="name">王氏</div><div class="tag">原配</div>
+                    </div>
+                </div>
+
+                <ul>
+                    <li>
+                        <div class="member-card" onclick="openDetails('张德福', '1930-2010', '重庆', '务农为生，育有三子。', 'images/defu.jpg')">
+                            <div class="name">张德福</div><div class="tag">长子 (德字辈)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="couple">
+                            <div class="member-card" onclick="openDetails('张德寿', '1935-至今', '重庆', '退休干部。', 'images/deshou.jpg')">
+                                <div class="name">张德寿</div><div class="tag">次子</div>
                             </div>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+                            <span class="spouse-link divorced">/</span>
+                            <div class="member-card female ex-spouse" onclick="openDetails('前母某氏', '1940-至今', '未知', '1970年离异。', '')">
+                                <div class="name">刘氏</div><div class="tag">前配 (离)</div>
+                            </div>
+                            <span class="spouse-link">配</span>
+                            <div class="member-card female" onclick="openDetails('陈氏', '1945-至今', '重庆', '现任配偶。', 'images/chenshi.jpg')">
+                                <div class="name">陈氏</div><div class="tag">继配</div>
+                            </div>
+                        </div>
+
+                        <ul>
+                            <li>
+                                <div class="member-card" onclick="openDetails('张光亮', '1965-至今', '深圳', '本次族谱录入发起人。', 'images/me.jpg')">
+                                    <div class="name">张光亮</div><div class="tag">三代 (光字辈)</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </div>
+</div>
 
-    <div id="sidebar">
-        <span class="close-btn" onclick="closeSidebar()">&times;</span>
-        <div class="sidebar-photo"></div>
-        <h2 id="sd-name">姓名</h2>
-        <p><strong>生卒：</strong><span id="sd-date"></span></p>
-        <p><strong>籍贯：</strong><span id="sd-loc"></span></p>
-        <hr>
-        <p id="sd-desc">点击成员查看详细生平介绍。</p>
-    </div>
+<div id="sidebar">
+    <span class="close-btn" onclick="closeSidebar()">&times;</span>
+    <img id="sd-photo" src="" alt="成员照片" class="sidebar-photo">
+    <h2 id="sd-name" style="text-align:center; color:var(--primary-color); margin-top:0;">姓名</h2>
+    <div class="info-item"><span class="info-label">生卒日期:</span><span id="sd-date"></span></div>
+    <div class="info-item"><span class="info-label">原籍籍贯:</span><span id="sd-loc"></span></div>
+    <hr style="border:0; border-top: 1px double var(--line-color); margin: 20px 0;">
+    <div class="info-item"><span class="info-label">生平简介:</span><br><span id="sd-desc"></span></div>
+</div>
 
-    <script>
-        function openDetails(name, date, loc, desc) {
-            // 1. 把信息填进侧边栏
-            document.getElementById('sd-name').innerText = name;
-            document.getElementById('sd-date').innerText = date;
-            document.getElementById('sd-loc').innerText = loc;
-            document.getElementById('sd-desc').innerText = desc;
-            
-            // 2. 让侧边栏滑出来 (添加 active 类)
-            document.getElementById('sidebar').classList.add('active');
+<script>
+    function openDetails(name, date, loc, desc, photoUrl) {
+        document.getElementById('sd-name').innerText = name;
+        document.getElementById('sd-date').innerText = date;
+        document.getElementById('sd-loc').innerText = loc;
+        document.getElementById('sd-desc').innerText = desc;
+        
+        // 处理照片路径：如果为空则显示默认图
+        const photo = document.getElementById('sd-photo');
+        photo.src = photoUrl || 'https://via.placeholder.com/120?text=暂无照片';
+        
+        document.getElementById('sidebar').classList.add('active');
+    }
+
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('active');
+    }
+
+    // 点击侧边栏以外区域关闭它
+    window.onclick = function(event) {
+        let sidebar = document.getElementById('sidebar');
+        if (event.target == document.body) {
+            sidebar.classList.remove('active');
         }
+    }
+</script>
 
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('active');
-        }
-    </script>
 </body>
 </html>
