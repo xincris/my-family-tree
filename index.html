@@ -2,161 +2,122 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>简约家族谱  </title>
+    <title>家族传承谱 - 夫妻版</title>
     <style>
         :root {
-            --primary-color: #8c7851; /* 典雅古铜色 */
-            --bg-color: #fdfaf5;      /* 宣纸底色 */
-            --line-color: #d1c7b7;    /* 连接线颜色 */
-            --card-bg: #ffffff;
+            --primary-color: #8c7851;
+            --bg-color: #fdfaf5;
+            --line-color: #d1c7b7;
+            --male-bg: #ffffff;
+            --female-bg: #fffcf0; /* 配偶卡片略微换色 */
         }
 
-        body {
-            background-color: var(--bg-color);
-            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+        body { background-color: var(--bg-color); font-family: "Microsoft YaHei", sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px; }
 
-        h1 { color: var(--primary-color); margin-top: 30px; font-weight: 300; }
-
-        /* --- 家族谱核心 CSS --- */
-        .tree {
-            padding: 40px;
-            display: inline-flex;
-        }
-
+        /* --- 家族树核心布局 --- */
         .tree ul {
-            padding-top: 25px; 
-            position: relative;
-            display: flex;
-            justify-content: center;
+            padding-top: 20px; position: relative;
+            display: flex; justify-content: center;
         }
 
         .tree li {
-            text-align: center;
-            list-style-type: none;
-            position: relative;
-            padding: 25px 10px 0 10px;
-            transition: all 0.3s;
+            text-align: center; list-style-type: none;
+            position: relative; padding: 20px 5px 0 5px;
         }
 
         /* 连接线逻辑 */
         .tree li::before, .tree li::after {
-            content: '';
-            position: absolute; top: 0; right: 50%;
-            border-top: 2px solid var(--line-color);
-            width: 50%; height: 25px;
+            content: ''; position: absolute; top: 0; right: 50%;
+            border-top: 2px solid var(--line-color); width: 50%; height: 20px;
         }
-        .tree li::after {
-            right: auto; left: 50%;
-            border-left: 2px solid var(--line-color);
-        }
+        .tree li::after { right: auto; left: 50%; border-left: 2px solid var(--line-color); }
         .tree li:only-child::after, .tree li:only-child::before { display: none; }
         .tree li:only-child { padding-top: 0; }
         .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
         .tree li:last-child::before { border-right: 2px solid var(--line-color); border-radius: 0 5px 0 0; }
         .tree li:first-child::after { border-radius: 5px 0 0 0; }
         .tree ul ul::before {
-            content: '';
-            position: absolute; top: 0; left: 50%;
-            border-left: 2px solid var(--line-color);
-            width: 0; height: 25px;
+            content: ''; position: absolute; top: 0; left: 50%;
+            border-left: 2px solid var(--line-color); width: 0; height: 20px;
         }
 
-        /* 卡片样式 */
-        .member-card {
-            border: 1px solid var(--line-color);
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #444;
-            display: inline-block;
-            border-radius: 6px;
-            background: var(--card-bg);
-            transition: all 0.3s;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            min-width: 100px;
-        }
-
-        .member-card:hover {
-            background: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-            transform: translateY(-3px);
-        }
-
-        .member-card .name { font-size: 16px; font-weight: bold; }
-        .member-card .tag { font-size: 12px; opacity: 0.7; margin-top: 4px; }
-
-        /* --- 详情弹窗 (Modal) --- */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 100;
+        /* --- 夫妻并排样式 --- */
+        .couple {
+            display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            width: 80%;
+            gap: 10px; /* 夫妻之间的间距 */
             position: relative;
+            z-index: 10;
         }
 
-        .close-btn {
-            position: absolute; top: 10px; right: 15px;
-            cursor: pointer; font-size: 20px; color: #999;
+        .spouse-link {
+            font-size: 18px;
+            color: var(--line-color);
+            font-weight: bold;
         }
+
+        /* 卡片基础样式 */
+        .member-card {
+            border: 1px solid var(--line-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            background: var(--male-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 80px;
+        }
+
+        .member-card.female {
+            background: var(--female-bg);
+            border-style: dashed; /* 虚线框代表姻亲，可选 */
+        }
+
+        .name { font-weight: bold; font-size: 15px; }
+        .tag { font-size: 11px; color: #999; margin-top: 3px; }
     </style>
 </head>
 <body>
 
-    <h1>家族传承谱系</h1>
+    <h2 style="color:var(--primary-color)">张氏家族谱 (夫妻版)</h2>
 
     <div class="tree">
         <ul>
             <li>
-                <div class="member-card" onclick="showInfo('牟方梅', '女，1952')">
-                    <div class="name">牟方梅</div>
-                    <div class="tag">第一代</div>
+                <div class="couple">
+                    <div class="member-card">
+                        <div class="name">张老太爷</div>
+                        <div class="tag">始祖</div>
+                    </div>
+                    <span class="spouse-link">❤</span>
+                    <div class="member-card female">
+                        <div class="name">王老太奶</div>
+                        <div class="tag">姻亲</div>
+                    </div>
                 </div>
+
                 <ul>
                     <li>
-                        <div class="member-card" onclick="showInfo('饶华东', '男，1974')">
-                            <div class="name">饶华东</div>
-                            <div class="tag">第二代</div>
+                        <div class="member-card">
+                            <div class="name">张大伯</div>
+                            <div class="tag">长子</div>
                         </div>
-                         <ul>
-                            <li>
-                                <div class="member-card" onclick="showInfo('饶艳霞', '女，1998')">
-                                    <div class="name">饶艳霞</div>
-                                    <div class="tag">第三代</div>
-                                </div>
-                            </li>
-                        </ul>
                     </li>
                     <li>
-                        <div class="member-card" onclick="showInfo('饶华莉', '女，1977')">
-                            <div class="name">饶华莉</div>
-                            <div class="tag">第二代</div>
+                        <div class="couple">
+                            <div class="member-card">
+                                <div class="name">张父亲</div>
+                                <div class="tag">次子</div>
+                            </div>
+                            <span class="spouse-link">❤</span>
+                            <div class="member-card female">
+                                <div class="name">李母亲</div>
+                                <div class="tag">姻亲</div>
+                            </div>
                         </div>
+
                         <ul>
-                            <li>
-                                <div class="member-card" onclick="showInfo('景鑫', '男，1997')">
-                                    <div class="name">景鑫</div>
-                                    <div class="tag">第三代</div>
-                                </div>
-                            </li>
+                            <li><div class="member-card"><div class="name">我</div></div></li>
+                            <li><div class="member-card"><div class="name">妹妹</div></div></li>
                         </ul>
                     </li>
                 </ul>
@@ -164,27 +125,5 @@
         </ul>
     </div>
 
-    <div id="infoModal" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 id="modalName">姓名</h2>
-            <p id="modalDate" style="color: #888;"></p>
-            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
-            <p id="modalDesc">这里是详细生平描述...</p>
-        </div>
-    </div>
-
-    <script>
-        function showInfo(name, date, desc) {
-            document.getElementById('modalName').innerText = name;
-            document.getElementById('modalDate').innerText = date;
-            document.getElementById('modalDesc').innerText = desc;
-            document.getElementById('infoModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('infoModal').style.display = 'none';
-        }
-    </script>
 </body>
 </html>
