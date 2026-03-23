@@ -4,6 +4,43 @@
     <meta charset="UTF-8">
     <title>进阶版家族谱 - 带详情侧边栏</title>
     <style>
+        /* 1. 正常状态：默认样式，保持清晰 */
+.member-card {
+    border: 1px solid var(--line-color);
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+/* 2. 殁 (Deceased)：黑白、肃穆、怀念 */
+.member-card.deceased {
+    filter: grayscale(100%);     /* 变成黑白照片感 */
+    background-color: #f0f0f0;   /* 灰色底 */
+    border: 1px dashed #999;     /* 虚线边框 */
+    opacity: 0.8;                /* 略微透明 */
+}
+.member-card.deceased .name::after {
+    content: " (殁)";            /* 自动在名字后加字，省去手动输入 */
+    font-size: 10px;
+    color: #777;
+}
+
+/* 3. 离 (Divorced)：半透明、边缘化、过去式 */
+.member-card.ex-spouse {
+    opacity: 0.4;                /* 大幅透明，不抢眼 */
+    border: 1px dotted #ccc;     /* 点状边框，表示联系微弱 */
+    transform: scale(0.95);      /* 稍微缩小一点 */
+    filter: sepia(30%);          /* 带一点点怀旧的黄褐色 */
+}
+.member-card.ex-spouse:hover {
+    opacity: 1;                  /* 鼠标放上去才恢复清晰，表示尊重历史 */
+}
+
+/* 离异专用连接符 */
+.spouse-link.divorced {
+    color: #ccc;
+    font-size: 14px;
+    margin: 0 10px;
+}
         :root {
             --primary-color: #8c7851;
             --bg-color: #fdfaf5;
