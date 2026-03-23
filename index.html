@@ -2,128 +2,106 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>家族传承谱 - 夫妻版</title>
+    <title>进阶版家族谱 - 带详情侧边栏</title>
     <style>
         :root {
             --primary-color: #8c7851;
             --bg-color: #fdfaf5;
             --line-color: #d1c7b7;
-            --male-bg: #ffffff;
-            --female-bg: #fffcf0; /* 配偶卡片略微换色 */
+            --sidebar-bg: #fff;
         }
 
-        body { background-color: var(--bg-color); font-family: "Microsoft YaHei", sans-serif; display: flex; flex-direction: column; align-items: center; padding: 40px; }
+        body { background-color: var(--bg-color); font-family: "Microsoft YaHei", sans-serif; margin: 0; display: flex; overflow-x: auto; }
 
-        /* --- 家族树核心布局 --- */
-        .tree ul {
-            padding-top: 20px; position: relative;
-            display: flex; justify-content: center;
-        }
-
-        .tree li {
-            text-align: center; list-style-type: none;
-            position: relative; padding: 20px 5px 0 5px;
-        }
-
-        /* 连接线逻辑 */
-        .tree li::before, .tree li::after {
-            content: ''; position: absolute; top: 0; right: 50%;
-            border-top: 2px solid var(--line-color); width: 50%; height: 20px;
-        }
+        /* --- 家族树部分 --- */
+        .tree-container { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
+        .tree li { text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; }
+        
+        /* 连线 CSS (同前，保持稳定) */
+        .tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid var(--line-color); width: 50%; height: 20px; }
         .tree li::after { right: auto; left: 50%; border-left: 2px solid var(--line-color); }
         .tree li:only-child::after, .tree li:only-child::before { display: none; }
         .tree li:only-child { padding-top: 0; }
-        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-        .tree li:last-child::before { border-right: 2px solid var(--line-color); border-radius: 0 5px 0 0; }
         .tree li:first-child::after { border-radius: 5px 0 0 0; }
-        .tree ul ul::before {
-            content: ''; position: absolute; top: 0; left: 50%;
-            border-left: 2px solid var(--line-color); width: 0; height: 20px;
-        }
+        .tree li:last-child::before { border-right: 2px solid var(--line-color); border-radius: 0 5px 0 0; }
+        .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid var(--line-color); width: 0; height: 20px; }
 
-        /* --- 夫妻并排样式 --- */
-        .couple {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px; /* 夫妻之间的间距 */
-            position: relative;
-            z-index: 10;
-        }
-
-        .spouse-link {
-            font-size: 18px;
-            color: var(--line-color);
-            font-weight: bold;
-        }
-
-        /* 卡片基础样式 */
+        /* 卡片交互样式 */
         .member-card {
-            border: 1px solid var(--line-color);
-            padding: 10px 15px;
-            border-radius: 5px;
-            background: var(--male-bg);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            min-width: 80px;
+            border: 1px solid var(--line-color); padding: 10px 15px; border-radius: 5px;
+            background: #fff; cursor: pointer; transition: all 0.3s; min-width: 80px;
         }
+        .member-card:hover { transform: scale(1.05); border-color: var(--primary-color); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .couple { display: flex; justify-content: center; align-items: center; gap: 8px; }
 
-        .member-card.female {
-            background: var(--female-bg);
-            border-style: dashed; /* 虚线框代表姻亲，可选 */
+        /* --- 侧边栏 CSS --- */
+        #sidebar {
+            width: 300px; height: 100vh; background: var(--sidebar-bg);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05);
+            position: fixed; right: -320px; top: 0; /* 初始隐藏在屏幕右侧 */
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 30px; box-sizing: border-box; z-index: 1000;
+            border-left: 4px solid var(--primary-color);
         }
-
-        .name { font-weight: bold; font-size: 15px; }
-        .tag { font-size: 11px; color: #999; margin-top: 3px; }
+        #sidebar.active { right: 0; } /* 激活时滑出 */
+        .close-btn { cursor: pointer; float: right; font-size: 24px; color: #ccc; }
+        .sidebar-photo { width: 100px; height: 100px; background: #eee; border-radius: 50%; margin: 20px auto; display: block; }
     </style>
 </head>
 <body>
 
-    <h2 style="color:var(--primary-color)">张氏家族谱 (夫妻版)</h2>
-
-    <div class="tree">
-        <ul>
-            <li>
-                <div class="couple">
-                    <div class="member-card">
-                        <div class="name">张老太爷</div>
-                        <div class="tag">始祖</div>
-                    </div>
-                    <span class="spouse-link">❤</span>
-                    <div class="member-card female">
-                        <div class="name">王老太奶</div>
-                        <div class="tag">姻亲</div>
-                    </div>
-                </div>
-
-                <ul>
-                    <li>
-                        <div class="member-card">
-                            <div class="name">张大伯</div>
-                            <div class="tag">长子</div>
+    <div class="tree-container">
+        <h2 style="color:var(--primary-color)">张氏家族电子族谱</h2>
+        <div class="tree">
+            <ul>
+                <li>
+                    <div class="couple">
+                        <div class="member-card" onclick="openDetails('张老太爷', '1920-2000', '重庆渝北', '家族创始人，早年闯荡江湖，为人仗义。')">
+                            <div class="name">张老太爷</div><div class="tag">始祖</div>
                         </div>
-                    </li>
-                    <li>
-                        <div class="couple">
-                            <div class="member-card">
-                                <div class="name">张父亲</div>
-                                <div class="tag">次子</div>
-                            </div>
-                            <span class="spouse-link">❤</span>
-                            <div class="member-card female">
-                                <div class="name">李母亲</div>
-                                <div class="tag">姻亲</div>
-                            </div>
+                        <span style="color:pink">❤</span>
+                        <div class="member-card" onclick="openDetails('王老太奶', '1923-2005', '四川成都', '勤俭持家，擅长蜀绣。')">
+                            <div class="name">王老太奶</div><div class="tag">姻亲</div>
                         </div>
-
-                        <ul>
-                            <li><div class="member-card"><div class="name">我</div></div></li>
-                            <li><div class="member-card"><div class="name">妹妹</div></div></li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ul>
+                    </div>
+                    <ul>
+                        <li>
+                            <div class="member-card" onclick="openDetails('张大伯', '1945-至今', '重庆', '退休教师，爱好书法。')">
+                                <div class="name">张大伯</div><div class="tag">长子</div>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </div>
 
+    <div id="sidebar">
+        <span class="close-btn" onclick="closeSidebar()">&times;</span>
+        <div class="sidebar-photo"></div>
+        <h2 id="sd-name">姓名</h2>
+        <p><strong>生卒：</strong><span id="sd-date"></span></p>
+        <p><strong>籍贯：</strong><span id="sd-loc"></span></p>
+        <hr>
+        <p id="sd-desc">点击成员查看详细生平介绍。</p>
+    </div>
+
+    <script>
+        function openDetails(name, date, loc, desc) {
+            // 1. 把信息填进侧边栏
+            document.getElementById('sd-name').innerText = name;
+            document.getElementById('sd-date').innerText = date;
+            document.getElementById('sd-loc').innerText = loc;
+            document.getElementById('sd-desc').innerText = desc;
+            
+            // 2. 让侧边栏滑出来 (添加 active 类)
+            document.getElementById('sidebar').classList.add('active');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+        }
+    </script>
 </body>
 </html>
