@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>家族电子族谱</title>
+    <title>吴/牟/饶氏家族谱 - 精准连线版</title>
     <style>
         :root {
             --primary-color: #8c7851;
@@ -11,62 +11,84 @@
         }
 
         body { background-color: var(--bg-color); font-family: "Microsoft YaHei", sans-serif; margin: 0; display: flex; overflow-x: auto; }
-        .tree-container { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .tree-container { flex: 1; padding: 60px; display: flex; flex-direction: column; align-items: center; }
         
-        /* 家族树基础布局 */
-        .tree ul { padding-top: 20px; position: relative; display: flex; justify-content: center; }
-        .tree li { text-align: center; list-style-type: none; position: relative; padding: 20px 5px 0 5px; }
-        .tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid var(--line-color); width: 50%; height: 20px; }
+        /* --- 家族树核心布局 --- */
+        .tree ul { padding-top: 25px; position: relative; display: flex; justify-content: center; }
+        .tree li { text-align: center; list-style-type: none; position: relative; padding: 25px 5px 0 5px; }
+
+        /* 子女上方的水平横线 */
+        .tree li::before, .tree li::after { 
+            content: ''; position: absolute; top: 0; right: 50%; 
+            border-top: 2px solid var(--line-color); width: 50%; height: 25px; 
+        }
         .tree li::after { right: auto; left: 50%; border-left: 2px solid var(--line-color); }
+        
+        /* 只有单个子女时隐藏横线 */
         .tree li:only-child::after, .tree li:only-child::before { display: none; }
         .tree li:only-child { padding-top: 0; }
+        
+        /* 修正横线边缘 */
         .tree li:first-child::after { border-radius: 5px 0 0 0; }
         .tree li:last-child::before { border-right: 2px solid var(--line-color); border-radius: 0 5px 0 0; }
-        .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid var(--line-color); width: 0; height: 20px; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
 
-        /* 成员卡片样式 */
-        .couple { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .member-card {
-            border: 1px solid var(--line-color); padding: 8px 12px; border-radius: 4px;
-            background: #fff; cursor: pointer; min-width: 85px; transition: 0.3s;
+        /* --- 关键：夫妻结合处的竖线 --- */
+        .couple { 
+            display: flex; justify-content: center; align-items: center; 
+            gap: 10px; position: relative; padding-bottom: 25px; /* 为下方竖线留出空间 */
         }
-        .member-card:hover { border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* 在 couple 容器下方正中间画竖线 */
+        .couple::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 25px; /* 竖线长度 */
+            border-left: 2px solid var(--line-color);
+        }
+
+        /* 成员卡片 */
+        .member-card {
+            border: 1px solid var(--line-color); padding: 10px; border-radius: 4px;
+            background: #fff; cursor: pointer; min-width: 90px; z-index: 2;
+        }
         .name { font-weight: bold; font-size: 15px; }
-        .tag { font-size: 11px; color: #999; margin-top: 2px; }
-
+        .tag { font-size: 11px; color: #999; }
+        
         /* 状态类 */
-        .deceased { filter: grayscale(100%); opacity: 0.7; border-style: dashed; background: #f0f0f0; }
-        .ex-spouse { opacity: 0.5; border-style: dotted; transform: scale(0.95); }
-        .spouse-link { font-size: 12px; color: #ccc; }
+        .deceased { filter: grayscale(100%); opacity: 0.7; border-style: dashed; }
+        .ex-spouse { opacity: 0.5; border-style: dotted; }
+        .spouse-link { font-size: 13px; color: var(--primary-color); font-weight: bold; z-index: 3; background: var(--bg-color); padding: 0 5px; }
 
-        /* 侧边栏 */
+        /* 详情侧边栏 */
         #sidebar {
             width: 300px; height: 100vh; background: #fff; position: fixed; right: -320px; top: 0;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: 0.4s; padding: 30px; box-sizing: border-box;
-            z-index: 1000; border-left: 4px solid var(--primary-color);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: 0.4s; padding: 30px; z-index: 1000;
         }
         #sidebar.active { right: 0; }
-        .close-btn { cursor: pointer; float: right; font-size: 24px; }
     </style>
 </head>
 <body>
 
 <div class="tree-container">
-    <h2 style="color:var(--primary-color)">家族电子谱</h2>
+    <h2 style="color:var(--primary-color)">家族传承谱 (结合线优化版)</h2>
 
     <div class="tree">
         <ul>
             <li>
                 <div class="couple">
-                    <div class="member-card deceased" onclick="openDetails('饶云寿', '已故', '原籍未知', '原配丈夫。')">
+                    <div class="member-card deceased" onclick="openDetails('饶云寿', '已故', '生父')">
                         <div class="name">饶云寿</div><div class="tag">原配 (殁)</div>
                     </div>
-                    <span class="spouse-link">+</span>
-                    <div class="member-card" style="border: 2px solid var(--primary-color)" onclick="openDetails('牟方梅', '在世', '重庆', '家族核心。')">
+                    <span class="spouse-link">配</span>
+                    <div class="member-card" onclick="openDetails('牟方梅', '在世', '母亲')">
                         <div class="name">牟方梅</div><div class="tag">母亲</div>
                     </div>
                     <span class="spouse-link">现配</span>
-                    <div class="member-card" onclick="openDetails('吴元贵', '在世', '重庆', '现任配偶。')">
+                    <div class="member-card" onclick="openDetails('吴元贵', '在世', '继父')">
                         <div class="name">吴元贵</div><div class="tag">现配</div>
                     </div>
                 </div>
@@ -74,42 +96,38 @@
                 <ul>
                     <li>
                         <div class="couple">
-                            <div class="member-card" onclick="openDetails('饶华东', '在世', '重庆', '牟方梅与饶云寿之子。')">
+                            <div class="member-card" onclick="openDetails('饶华东', '在世', '长子')">
                                 <div class="name">饶华东</div><div class="tag">长子</div>
                             </div>
                             <span class="spouse-link">配</span>
-                            <div class="member-card" onclick="openDetails('徐东英', '在世', '-', '饶华东妻子。')">
-                                <div class="name">徐东英</div><div class="tag">儿媳</div>
+                            <div class="member-card" onclick="openDetails('徐东英', '在世', '儿媳')">
+                                <div class="name">徐东英</div><div class="tag">妻子</div>
                             </div>
                         </div>
                         <ul>
                             <li>
-                                <div class="member-card" onclick="openDetails('饶艳霞', '在世', '-', '孙辈。')">
-                                    <div class="name">饶艳霞</div><div class="tag">孙女</div>
-                                </div>
+                                <div class="member-card"><div class="name">饶艳霞</div><div class="tag">孙女</div></div>
                             </li>
                         </ul>
                     </li>
 
                     <li>
                         <div class="couple">
-                            <div class="member-card" onclick="openDetails('饶华莉', '在世', '重庆', '牟方梅与饶云寿之女。')">
+                            <div class="member-card" onclick="openDetails('饶华莉', '在世', '长女')">
                                 <div class="name">饶华莉</div><div class="tag">长女</div>
                             </div>
-                            <span class="spouse-link">离异/</span>
-                            <div class="member-card ex-spouse" onclick="openDetails('景晓东', '在世', '-', '饶华莉前夫。')">
-                                <div class="name">景晓东</div><div class="tag">前配 (离)</div>
+                            <span class="spouse-link" style="color:#ccc">离/</span>
+                            <div class="member-card ex-spouse" onclick="openDetails('景晓东', '在世', '前夫')">
+                                <div class="name">景晓东</div><div class="tag">前配</div>
                             </div>
                             <span class="spouse-link">现配</span>
-                            <div class="member-card" onclick="openDetails('李家国', '在世', '-', '饶华莉现任丈夫。')">
+                            <div class="member-card" onclick="openDetails('李家国', '在世', '现夫')">
                                 <div class="name">李家国</div><div class="tag">现配</div>
                             </div>
                         </div>
                         <ul>
                             <li>
-                                <div class="member-card" onclick="openDetails('景鑫', '在世', '-', '饶华莉与景晓东之子。')">
-                                    <div class="name">景鑫</div><div class="tag">外孙</div>
-                                </div>
+                                <div class="member-card"><div class="name">景鑫</div><div class="tag">外孙</div></div>
                             </li>
                         </ul>
                     </li>
@@ -120,20 +138,15 @@
 </div>
 
 <div id="sidebar">
-    <span class="close-btn" onclick="closeSidebar()">&times;</span>
-    <h2 id="sd-name" style="margin-top:40px;">姓名</h2>
-    <p><strong>状态：</strong><span id="sd-status"></span></p>
-    <p><strong>籍贯：</strong><span id="sd-loc"></span></p>
-    <hr>
+    <span style="cursor:pointer;float:right" onclick="closeSidebar()">×</span>
+    <h2 id="sd-name" style="margin-top:40px;"></h2>
     <p id="sd-desc"></p>
 </div>
 
 <script>
-    function openDetails(name, status, loc, desc) {
+    function openDetails(name, status, desc) {
         document.getElementById('sd-name').innerText = name;
-        document.getElementById('sd-status').innerText = status;
-        document.getElementById('sd-loc').innerText = loc;
-        document.getElementById('sd-desc').innerText = desc;
+        document.getElementById('sd-desc').innerText = status + " | " + desc;
         document.getElementById('sidebar').classList.add('active');
     }
     function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); }
